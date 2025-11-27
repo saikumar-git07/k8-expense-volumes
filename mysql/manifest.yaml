@@ -34,6 +34,8 @@ spec:
       containers:
       - name: mysql
         image: saikumar718/mysqlv1.0.0
+        nodeSelector:
+          topology.kubernetes.io/zone: us-east-1c
         ports:
         - containerPort: 80
           name: web
@@ -45,18 +47,18 @@ spec:
         persistentVolumeClaim:
           claimName: mysql
 ---
-apiVersion: v1 
-kind: Service 
-metadata:
-  name: mysql
-  namespace: expense
-spec:
-  clusterIP: None
-  selector:
-    component: mysql
-    project: expense
-    tier: db
-  ports:
-  - protocol: TCP
-    port: 3306
-    targetPort: 3306
+# apiVersion: v1 
+# kind: Service 
+# metadata:
+#   name: mysql
+#   namespace: expense
+# spec:
+#   clusterIP: None
+#   selector:
+#     component: mysql
+#     project: expense
+#     tier: db
+#   ports:
+#   - protocol: TCP
+#     port: 3306
+#     targetPort: 3306
