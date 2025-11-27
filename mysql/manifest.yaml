@@ -15,6 +15,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mysql
+  namespace: expense
 spec:
   selector:
     matchLabels:
@@ -30,7 +31,6 @@ spec:
         project: expense
         tier: db
     spec:
-      terminationGracePeriodSeconds: 10
       containers:
       - name: mysql
         image: saikumar718/mysqlv1.0.0
@@ -40,7 +40,7 @@ spec:
         volumeMounts:
         - name: mysql
           mountPath: /var/lib/mysql
-      Volumes:
+      volumes:
       - name: mysql
         persistentVolumeClaim:
           claimName: mysql
