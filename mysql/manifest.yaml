@@ -51,7 +51,7 @@ metadata:
   name: mysql
   namespace: expense
 spec:
-  clusterIP: none
+  clusterIP: None
   selector:
     component: mysql
     project: expense
