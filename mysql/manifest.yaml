@@ -1,15 +1,33 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
+apiVersion: v1 
+kind: Service 
 metadata:
-  name: ebs-dynamic
+  name: mysql-headless
   namespace: expense
 spec:
-  storageClassName: "expense-ebs" # Empty string must be explicitly set otherwise default StorageClass will be set
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 4Gi
+  clusterIP: None
+  selector:
+    component: mysql
+    project: expense
+    tier: db
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: mysql
+  namespace: expense
+spec:
+  selector:
+    component: mysql
+    project: expense
+    tier: db
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -22,7 +40,7 @@ spec:
       component: mysql # has to match .spec.template.metadata.labels
       project: expense
       tier: db
-  serviceName: "nginx"
+  serviceName: "mysql-headless"
   replicas: 3 # by default is 1
   template:
     metadata:
@@ -33,32 +51,20 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: saikumar718/mysqlv1.0.0
+        image: saikumar718/mysqlv1.0.0 
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
           name: web
         volumeMounts:
         - name: mysql
           mountPath: /var/lib/mysql
-      nodeSelector:
-          topology.kubernetes.io/zone: us-east-1c
-      volumes:
-      - name: mysql
-        persistentVolumeClaim:
-          claimName: mysql
----
-apiVersion: v1 
-kind: Service 
-metadata:
-  name: mysql
-  namespace: expense
-spec:
-  clusterIP: None
-  selector:
-    component: mysql
-    project: expense
-    tier: db
-  ports:
-  - protocol: TCP
-    port: 3306
-    targetPort: 3306
+    volumeClaimTemplates:
+    - metadata:
+        name: mysql
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        storageClassName: "expense-ebs"
+        resources:
+          requests:
+            storage: 1G      
